@@ -180,13 +180,86 @@ class State {
     }
 }
 
-const state = new State();
-const white = new Cell();
-const black = new Cell();
-white.set(Cell.white);
-black.set(Cell.black);
-state.move(black, 4, 2);
-state.move(white, 5, 2);
-state.move(black, 6, 2);
-state.move(white, 4, 1);
-state.draw();
+class BoardCell {
+    static cellHeight: number = 50;
+    static cellWidth: number = 50;
+    static cellBorder: number = 3;
+    static cellRadius: number = 20;
+    static backgroundColor: string = "green";
+    static whiteColor: string = "white";
+    static blackColor: string = "black";
+    // 緑色のセル
+    backgroundElem;
+    // 白黒を扱う
+    elem;
+    constructor(parent, y: number, x: number) {
+        // セルの設定
+        this.backgroundElem = document.createElement("div");
+        this.backgroundElem.classList.add("backgroundCell");
+        this.backgroundElem.style.height = `${BoardCell.cellHeight}px`;
+        this.backgroundElem.style.width = `${BoardCell.cellWidth}px`;
+        this.backgroundElem.style.border = `${BoardCell.cellBorder}px`;
+        this.backgroundElem.style.top = `${(BoardCell.cellHeight + BoardCell.cellBorder) * y + BoardCell.cellBorder}px`;
+        this.backgroundElem.style.left = `${(BoardCell.cellWidth + BoardCell.cellBorder) * x + BoardCell.cellBorder}px`;
+        this.backgroundElem.style.backgrroundColor = BoardCell.backgroundColor;
+
+        // 石の色の設定
+        this.elem = document.createElement("div");
+        this.elem.classList.add("gameCell");
+        this.elem.style.height = `${BoardCell.cellRadius*2}px`;
+        this.elem.style.width = `${BoardCell.cellRadius*2}px`;
+        //this.elem.style.top = `${(BoardCell.cellHeight + BoardCell.cellBorder) * y + BoardCell.cellBorder + (BoardCell.cellHeight / 2 - BoardCell.cellRadius)}px`;
+        //this.elem.style.left = `${(BoardCell.cellWidth + BoardCell.cellBorder) * x + BoardCell.cellBorder + (BoardCell.cellWidth / 2 - BoardCell.cellRadius)}px`;
+        this.elem.style.top = `${BoardCell.cellBorder + (BoardCell.cellHeight / 2 - BoardCell.cellRadius)}px`;
+        this.elem.style.left = `${BoardCell.cellBorder + (BoardCell.cellWidth / 2 - BoardCell.cellRadius)}px`;
+        this.elem.style.backgroundColor = BoardCell.backgroundColor;
+
+        this.backgroundElem.appendChild(this.elem);
+        parent.appendChild(this.backgroundElem);
+    }
+    // 石の色を変える
+    setColor(y: number, x: number, cell: Cell) {
+        let color : string = BoardCell.backgroundColor;
+        if (cell.get() === Cell.black) {
+            color = BoardCell.blackColor;
+        } else if (cell.get() === Cell.white) {
+            color = BoardCell.whiteColor;
+        }
+        this.elem.style.backgroundColor = color;
+    }
+}
+
+class Board {
+    state: State;
+    cellBoard : BoardCell[][];
+    parent;
+    constructor() {
+        this.parent = document.getElementById("gameBoard");
+        this.parent.style.height = `${(BoardCell.cellHeight + BoardCell.cellBorder) * State.height + BoardCell.cellBorder}px`;
+        this.parent.style.width = `${(BoardCell.cellWidth + BoardCell.cellBorder) * State.width + BoardCell.cellBorder}px`;
+        this.state = new State();
+        this.cellBoard = new Array(State.height);
+        for (let i = 0; i < State.height; ++i) {
+            this.cellBoard[i] = new Array(State.width);
+            for (let j = 0; j < State.width; ++j) {
+                this.cellBoard[i][j] = new BoardCell(this.parent, i, j);
+            }
+        }
+    }
+    // 石の色と場所を決めたらひっくり返していただく
+    // 動かせたら true, 動かせなかったら false
+    move(cell : Cell, y: number, x : number) {
+        return this.state.move(cell, y, x);
+    }
+    // 描画する
+    draw() {
+        for (let i = 0; i < State.height; ++i) {
+            for (let j = 0; j < State.width; ++j) {
+                this.cellBoard[i][j].setColor(i, j, this.state.board[i][j]);
+            }
+        }
+    }
+}
+
+const board = new Board();
+board.draw();

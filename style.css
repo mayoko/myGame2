@@ -1,0 +1,22 @@
+.centering {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.gameBoard {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    background-color: white;
+}
+
+.backgroundCell {
+    position: absolute;
+}
+
+.gameCell {
+    position: absolute;
+    border-radius: 50%;
+}
