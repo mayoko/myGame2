@@ -342,7 +342,22 @@ class Game {
                 else if (this.board.state.board[i][j].get() === Cell.black) ++black;
             }
         }
-        console.log((isFinished ? "Finished: " : "") + `White: ${white} vs Black: ${black}`);
+        const blackDisplay = document.getElementById("blackDisplay");
+        const whiteDisplay = document.getElementById("whiteDisplay");
+        blackDisplay.textContent = `${black}`;
+        whiteDisplay.textContent = `${white}`;
+        if (isFinished) {
+            blackDisplay.style.border = "3px solid red";
+            whiteDisplay.style.border = "3px solid red";
+        } else {
+            if (this.turn === 0) {
+                blackDisplay.style.border = "3px solid red";
+                whiteDisplay.style.border = "3px solid black";
+            } else {
+                blackDisplay.style.border = "3px solid black";
+                whiteDisplay.style.border = "3px solid red";
+            }
+        }
     }
     // 次に石を置く player が 0 か 1 か判定
     private nextPlayer() {

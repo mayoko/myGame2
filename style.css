@@ -2,6 +2,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    margin: 10px;
 }
 
 .gameBoard {
@@ -9,7 +10,7 @@
     justify-content: center;
     align-items: center;
     position: relative;
-    background-color: #eee;
+    background-color: white;
 }
 
 .backgroundCell {
@@ -19,4 +20,22 @@
 .gameCell {
     position: absolute;
     border-radius: 50%;
+}
+
+.gameDisplay {
+    height: 60px;
+    width: 100px;
+    border: 3px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+}
+#blackDisplay {
+    background-color: black;
+    color: white;
+}
+
+.vs {
+    font-size: 25px;
 }
