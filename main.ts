@@ -141,6 +141,8 @@ class State {
     // 石を置けるか判定する
     // ほとんど上と同じ
     private canMoveInPos(cell: Cell, y: number, x: number) {
+        // 既に石が置かれてるところだったら無理
+        if (this.board[y][x].get() != Cell.none) return false;
         // color と反対の石の色
         const rColor : number = cell.reverse();
         // 周辺 8 方向
@@ -257,7 +259,100 @@ class Board {
             }
         }
     }
+    // 指定された石の色でどこかに置けるか確認する
+    canMove(cell: Cell) {
+        return this.state.canMove(cell);
+    }
 }
 
-const board = new Board();
-board.draw();
+class Player {
+    cell: Cell;
+    board: Board;
+    constructor(color: string, board: Board) {
+        this.cell = new Cell();
+        if (color === "white") {
+            this.cell.set(Cell.white);
+        } else if (color === "black") {
+            this.cell.set(Cell.black);
+        } else {
+            console.error("player's color is set invalidly.");
+        }
+        this.board = board;
+    }
+    // 石を置けるか判定する
+    canMove() {
+        return this.board.canMove(this.cell);
+    }
+    // 石を置く
+    // valid な置き方なら true, そうでないなら false
+    move(y: number, x: number) {
+        return this.board.move(this.cell, y, x);
+    }
+}
+
+class Game {
+    players : Player[];
+    board   : Board;
+    turn    : number;
+    constructor() {
+        this.board = new Board();
+        this.players = new Array(2);
+        this.players[0] = new Player("black", this.board);
+        this.players[1] = new Player("white", this.board);
+        this.turn = 0;
+        this.board.parent.addEventListener("click", (e) => {
+            const target_rect = e.currentTarget.getBoundingClientRect();
+            let y: number = e.clientY - target_rect.top;
+            let x: number = e.clientX - target_rect.left;
+            y = Math.floor(y / (BoardCell.cellHeight + BoardCell.cellBorder));
+            x = Math.floor(x / (BoardCell.cellWidth + BoardCell.cellBorder));
+            y = Math.min(y, State.height - 1);
+            x = Math.min(x, State.width - 1);
+            console.log([y, x]);
+            this.move(y, x);
+        });
+        this.draw();
+    }
+    // 試合終了か判定
+    isFinished() {
+        return !this.players[0].canMove() && !this.players[1].canMove();
+    }
+    // 指定の人が石を置く
+    // 正しく置けたら true そうでなかったら false
+    move(y: number, x: number) {
+        const result : boolean = this.players[this.turn].move(y, x);
+        if (this.isFinished()) {
+            this.draw(true);
+            return true;
+        }
+        if (result) {
+            this.turn = this.nextPlayer();
+        }
+        this.draw();
+        return result;
+    }
+    draw(isFinished: boolean = false) {
+        // ボードの描画
+        this.board.draw();
+        // 得点の描画
+        let white: number = 0, black: number = 0;
+        for (let i = 0; i < State.height; ++i) {
+            for (let j = 0; j < State.width; ++j) {
+                if (this.board.state.board[i][j].get() === Cell.white) ++white;
+                else if (this.board.state.board[i][j].get() === Cell.black) ++black;
+            }
+        }
+        console.log((isFinished ? "Finished: " : "") + `White: ${white} vs Black: ${black}`);
+    }
+    // 次に石を置く player が 0 か 1 か判定
+    private nextPlayer() {
+        const next: number = (this.turn ^ 1);
+        if (this.players[next].canMove()) {
+            return next;
+        } else {
+            return this.turn;
+        }
+    }
+}
+
+const game = new Game();
