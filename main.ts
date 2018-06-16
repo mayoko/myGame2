@@ -201,17 +201,15 @@ class BoardCell {
         this.backgroundElem.style.border = `${BoardCell.cellBorder}px`;
         this.backgroundElem.style.top = `${(BoardCell.cellHeight + BoardCell.cellBorder) * y + BoardCell.cellBorder}px`;
         this.backgroundElem.style.left = `${(BoardCell.cellWidth + BoardCell.cellBorder) * x + BoardCell.cellBorder}px`;
-        this.backgroundElem.style.backgrroundColor = BoardCell.backgroundColor;
+        this.backgroundElem.style.backgroundColor = BoardCell.backgroundColor;
 
         // 石の色の設定
         this.elem = document.createElement("div");
         this.elem.classList.add("gameCell");
         this.elem.style.height = `${BoardCell.cellRadius*2}px`;
         this.elem.style.width = `${BoardCell.cellRadius*2}px`;
-        //this.elem.style.top = `${(BoardCell.cellHeight + BoardCell.cellBorder) * y + BoardCell.cellBorder + (BoardCell.cellHeight / 2 - BoardCell.cellRadius)}px`;
-        //this.elem.style.left = `${(BoardCell.cellWidth + BoardCell.cellBorder) * x + BoardCell.cellBorder + (BoardCell.cellWidth / 2 - BoardCell.cellRadius)}px`;
-        this.elem.style.top = `${BoardCell.cellBorder + (BoardCell.cellHeight / 2 - BoardCell.cellRadius)}px`;
-        this.elem.style.left = `${BoardCell.cellBorder + (BoardCell.cellWidth / 2 - BoardCell.cellRadius)}px`;
+        this.elem.style.top = `${ (BoardCell.cellHeight / 2 - BoardCell.cellRadius)}px`;
+        this.elem.style.left = `${(BoardCell.cellWidth / 2 - BoardCell.cellRadius)}px`;
         this.elem.style.backgroundColor = BoardCell.backgroundColor;
 
         this.backgroundElem.appendChild(this.elem);
