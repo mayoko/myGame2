@@ -15,6 +15,7 @@
 
 .backgroundCell {
     position: absolute;
+    box-sizing: border-box;
 }
 
 .gameCell {

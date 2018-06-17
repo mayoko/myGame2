@@ -140,7 +140,7 @@ class State {
     }
     // 石を置けるか判定する
     // ほとんど上と同じ
-    private canMoveInPos(cell: Cell, y: number, x: number) {
+    canMoveInPos(cell: Cell, y: number, x: number) {
         // 既に石が置かれてるところだったら無理
         if (this.board[y][x].get() != Cell.none) return false;
         // color と反対の石の色
@@ -185,7 +185,7 @@ class State {
 class BoardCell {
     static cellHeight: number = 50;
     static cellWidth: number = 50;
-    static cellBorder: number = 3;
+    static cellBorder: number = 1.5;
     static cellRadius: number = 20;
     static backgroundColor: string = "green";
     static whiteColor: string = "white";
@@ -200,7 +200,7 @@ class BoardCell {
         this.backgroundElem.classList.add("backgroundCell");
         this.backgroundElem.style.height = `${BoardCell.cellHeight}px`;
         this.backgroundElem.style.width = `${BoardCell.cellWidth}px`;
-        this.backgroundElem.style.border = `${BoardCell.cellBorder}px`;
+        this.backgroundElem.style.border = `${BoardCell.cellBorder}px solid white`;
         this.backgroundElem.style.top = `${(BoardCell.cellHeight + BoardCell.cellBorder) * y + BoardCell.cellBorder}px`;
         this.backgroundElem.style.left = `${(BoardCell.cellWidth + BoardCell.cellBorder) * x + BoardCell.cellBorder}px`;
         this.backgroundElem.style.backgroundColor = BoardCell.backgroundColor;
@@ -210,8 +210,8 @@ class BoardCell {
         this.elem.classList.add("gameCell");
         this.elem.style.height = `${BoardCell.cellRadius*2}px`;
         this.elem.style.width = `${BoardCell.cellRadius*2}px`;
-        this.elem.style.top = `${ (BoardCell.cellHeight / 2 - BoardCell.cellRadius)}px`;
-        this.elem.style.left = `${(BoardCell.cellWidth / 2 - BoardCell.cellRadius)}px`;
+        this.elem.style.top = `${ (BoardCell.cellHeight / 2 - BoardCell.cellBorder - BoardCell.cellRadius)}px`;
+        this.elem.style.left = `${(BoardCell.cellWidth / 2 - BoardCell.cellBorder - BoardCell.cellRadius)}px`;
         this.elem.style.backgroundColor = BoardCell.backgroundColor;
 
         this.backgroundElem.appendChild(this.elem);
@@ -226,6 +226,10 @@ class BoardCell {
             color = BoardCell.whiteColor;
         }
         this.elem.style.backgroundColor = color;
+    }
+    // 枠の色を変える
+    changeBorderColor(color: string) {
+        this.backgroundElem.style.border = `${BoardCell.cellBorder}px solid ` + color;
     }
 }
 
@@ -263,6 +267,10 @@ class Board {
     canMove(cell: Cell) {
         return this.state.canMove(cell);
     }
+    // 指定された石の色で特定の位置に置けるか確認する
+    canMoveInPos(cell: Cell, y: number, x: number) {
+        return this.state.canMoveInPos(cell, y, x);
+    }
 }
 
 class Player {
@@ -283,6 +291,10 @@ class Player {
     canMove() {
         return this.board.canMove(this.cell);
     }
+    // 特定の位置に石が置けるか判定する
+    canMoveInPos(y: number, x: number) {
+        return this.board.canMoveInPos(this.cell, y, x);
+    }
     // 石を置く
     // valid な置き方なら true, そうでないなら false
     move(y: number, x: number) {
@@ -301,15 +313,13 @@ class Game {
         this.players[1] = new Player("white", this.board);
         this.turn = 0;
         this.board.parent.addEventListener("click", (e) => {
-            const target_rect = e.currentTarget.getBoundingClientRect();
-            let y: number = e.clientY - target_rect.top;
-            let x: number = e.clientX - target_rect.left;
-            y = Math.floor(y / (BoardCell.cellHeight + BoardCell.cellBorder));
-            x = Math.floor(x / (BoardCell.cellWidth + BoardCell.cellBorder));
-            y = Math.min(y, State.height - 1);
-            x = Math.min(x, State.width - 1);
-            console.log([y, x]);
-            this.move(y, x);
+            this.clickEvent(e);
+        });
+        this.board.parent.addEventListener("mouseover", (e) => {
+            this.mouseoverEvent(e);
+        });
+        this.board.parent.addEventListener("mouseout", (e) => {
+            this.mouseoutEvent();
         });
         this.draw();
     }
@@ -367,6 +377,40 @@ class Game {
         } else {
             return this.turn;
         }
+    }
+    private clickEvent(e) {
+        const target_rect = e.currentTarget.getBoundingClientRect();
+        const [y, x] = this.getPos(e.clientY, e.clientX, target_rect.top, target_rect.left);
+        this.move(y, x);
+    }
+    private mouseoverEvent(e) {
+        const target_rect = e.currentTarget.getBoundingClientRect();
+        const [y, x] = this.getPos(e.clientY, e.clientX, target_rect.top, target_rect.left);
+        for (let i = 0; i < State.height; ++i) {
+            for (let j = 0; j < State.width; ++j) {
+                if (i === y && j === x && this.players[this.turn].canMoveInPos(y, x)) {
+                    this.board.cellBoard[i][j].changeBorderColor("red");
+                } else {
+                    this.board.cellBoard[i][j].changeBorderColor("white");
+                }
+            }
+        }
+    }
+    private mouseoutEvent() {
+        for (let i = 0; i < State.height; ++i) {
+            for (let j = 0; j < State.width; ++j) {
+                this.board.cellBoard[i][j].changeBorderColor("white");
+            }
+        }
+    }
+    private getPos(clientY: number, clientX: number, offsetY: number, offsetX: number) {
+        let y: number = clientY - offsetY;
+        let x: number = clientX - offsetX;
+        y = Math.floor(y / (BoardCell.cellHeight + BoardCell.cellBorder));
+        x = Math.floor(x / (BoardCell.cellWidth + BoardCell.cellBorder));
+        y = Math.min(y, State.height - 1);
+        x = Math.min(x, State.width - 1);
+        return [y, x];
     }
 }
 
