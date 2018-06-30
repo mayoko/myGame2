@@ -287,6 +287,12 @@ class Player {
         }
         this.board = board;
     }
+    // click に対するイベントの設定
+    addEventListener() {
+        this.board.parent.addEventListener("click", (e) => {
+            this.clickEvent(e);
+        });
+    }
     // 石を置けるか判定する
     canMove() {
         return this.board.canMove(this.cell);
@@ -300,6 +306,23 @@ class Player {
     move(y: number, x: number) {
         return this.board.move(this.cell, y, x);
     }
+    // クリックしたときの動作
+    private clickEvent(e) {
+        const target_rect = e.currentTarget.getBoundingClientRect();
+        const [y, x] = this.getPos(e.clientY, e.clientX, target_rect.top, target_rect.left);
+        if (this.canMoveInPos(y, x)) {
+            socketio.emit("move", [y, x]);
+        }
+    }
+    private getPos(clientY: number, clientX: number, offsetY: number, offsetX: number) {
+        let y: number = clientY - offsetY;
+        let x: number = clientX - offsetX;
+        y = Math.floor(y / (BoardCell.cellHeight + BoardCell.cellBorder));
+        x = Math.floor(x / (BoardCell.cellWidth + BoardCell.cellBorder));
+        y = Math.min(y, State.height - 1);
+        x = Math.min(x, State.width - 1);
+        return [y, x];
+    }
 }
 
 class Game {
@@ -312,9 +335,6 @@ class Game {
         this.players[0] = new Player("black", this.board);
         this.players[1] = new Player("white", this.board);
         this.turn = 0;
-        this.board.parent.addEventListener("click", (e) => {
-            this.clickEvent(e);
-        });
         this.board.parent.addEventListener("mouseover", (e) => {
             this.mouseoverEvent(e);
         });
@@ -414,4 +434,24 @@ class Game {
     }
 }
 
+import * as io from 'socket.io-client'
+const socketio = io.connect('http://localhost:8000');
 const game = new Game();
+let player: Player;
+
+socketio.on("colorInfo", (data) => {
+    if (data === "white") {
+        player = game.players[1];
+    } else if (data === "black") {
+        player = game.players[0];
+    } else {
+        console.error("setting color error!");
+    }
+    player.addEventListener();
+});
+
+socketio.on("broadcast", (data) => {
+    const y: number = data[0];
+    const x: number = data[1];
+    game.move(y, x);
+});
