@@ -434,6 +434,32 @@ class Game {
     }
 }
 
+// 入る部屋の初期化
+const roomIdInit = () => {
+    const MAX_ROOM_ID: number = 30;
+    const elem = document.getElementById("roomId");
+    for (let i: number = 1; i <= MAX_ROOM_ID; ++i) {
+        const option = document.createElement("option");
+        option.value = i.toString();
+        option.innerHTML = i.toString();
+        elem.appendChild(option);
+    }
+}
+roomIdInit();
+
+// 部屋に入る際の初期化
+const enterRoom = () => {
+    // 部屋 id の取得
+    const idSelect: HTMLSelectElement = document.getElementById("roomId") as HTMLSelectElement;
+    const id: number = parseInt(idSelect.value);
+    // 名前の取得
+    const name: string = (document.getElementById("name") as HTMLTextAreaElement).value;
+    socketio.emit("enter", [id, name]);
+}
+document.getElementById("btnEnter").addEventListener("click", (e) => {
+    enterRoom();
+});
+
 import * as io from 'socket.io-client'
 const socketio = io.connect('http://localhost:8000');
 const game = new Game();
@@ -442,8 +468,10 @@ let player: Player;
 socketio.on("colorInfo", (data) => {
     if (data === "white") {
         player = game.players[1];
+        document.getElementById("log").innerHTML += "<p>あなたは白です</p>"
     } else if (data === "black") {
         player = game.players[0];
+        document.getElementById("log").innerHTML += "<p>あなたは黒です</p>"
     } else {
         console.error("setting color error!");
     }
@@ -454,4 +482,8 @@ socketio.on("broadcast", (data) => {
     const y: number = data[0];
     const x: number = data[1];
     game.move(y, x);
+});
+
+socketio.on("addLog", (data) => {
+    document.getElementById("log").innerHTML += `<p>${data}</p>`;
 });
