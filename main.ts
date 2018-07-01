@@ -447,14 +447,24 @@ const roomIdInit = () => {
 }
 roomIdInit();
 
+let global = {enterRoomFlag: false};
+
 // 部屋に入る際の初期化
 const enterRoom = () => {
+    if (global.enterRoomFlag) {
+        document.getElementById("log").innerHTML += "<p>別の部屋に入りなおす場合はリロードしてください</p>"
+        return;
+    }
     // 部屋 id の取得
     const idSelect: HTMLSelectElement = document.getElementById("roomId") as HTMLSelectElement;
     const id: number = parseInt(idSelect.value);
     // 名前の取得
-    const name: string = (document.getElementById("name") as HTMLTextAreaElement).value;
+    let name: string = (document.getElementById("name") as HTMLTextAreaElement).value;
+    if (name === "") {
+        name = "匿名";
+    }
     socketio.emit("enter", [id, name]);
+    global.enterRoomFlag = true;
 }
 document.getElementById("btnEnter").addEventListener("click", (e) => {
     enterRoom();

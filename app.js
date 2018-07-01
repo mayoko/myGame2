@@ -64,17 +64,19 @@ class Server {
     }
     disconnectEvent(socket, io) {
         console.log("disconnectEvent");
-        // client に通知
-        const roomId = this.socketId2roomId.get(socket.id).toString();
-        io.sockets.in(roomId).emit("addLog", "対戦相手が退出しました");
-        // server から情報を消す
-        if (socket.id === this.sockets[roomId][0].id) {
-            // 先頭を削除
-            this.sockets[roomId].shift();
-        }
-        else {
-            // 末尾を削除
-            this.sockets[roomId].pop();
+        if (this.socketId2roomId.has(socket.id)) {
+            // client に通知
+            const roomId = this.socketId2roomId.get(socket.id).toString();
+            io.sockets.in(roomId).emit("addLog", "対戦相手が退出しました");
+            // server から情報を消す
+            if (socket.id === this.sockets[roomId][0].id) {
+                // 先頭を削除
+                this.sockets[roomId].shift();
+            }
+            else {
+                // 末尾を削除
+                this.sockets[roomId].pop();
+            }
         }
     }
     actionToConnect(socket) {
